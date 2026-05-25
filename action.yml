@@ -1,6 +1,6 @@
-name: 'TODO: Run <linter-name> with reviewdog'
-description: 'TODO: 🐶 Run <linter-name> with reviewdog on pull requests to improve code review experience.'
-author: 'TODO: <your-name>'
+name: 'Run clang-format with reviewdog'
+description: '🐶 Run clang-format with reviewdog on pull requests to improve code review experience.'
+author: 'tzijnge'
 inputs:
   github_token:
     description: 'GITHUB_TOKEN'
@@ -18,8 +18,8 @@ inputs:
   filter_mode:
     description: |
       Filtering mode for the reviewdog command [added,diff_context,file,nofilter].
-      Default is added.
-    default: 'added'
+      Default is nofilter.
+    default: 'nofilter'
   fail_level:
     description: |
       If set to `none`, always use exit code 0 for reviewdog. Otherwise, exit code 1 for reviewdog if it finds at least 1 issue with severity greater than or equal to the given level.
@@ -29,16 +29,43 @@ inputs:
   reviewdog_flags:
     description: 'Additional reviewdog flags'
     default: ''
-  ### Flags for <linter-name> ###
-  locale:
-    description: '-locale flag of misspell. (US/UK)'
+  ### Flags for clang-format ###
+  clang_format_version:
+    description: 'Version of clang-format to install (e.g. 14, 15, 16, 17, 18). Leave empty to use the default version available on the runner.'
     default: ''
+  extensions:
+    description: 'Comma-separated list of file extensions to check (without leading dot).'
+    default: 'c,cpp,cc,cxx,h,hpp,hh,hxx'
 runs:
-  using: 'docker'
-  image: 'Dockerfile'
+  using: 'composite'
+  steps:
+    - name: Install reviewdog
+      uses: reviewdog/action-setup@v1
+      with:
+        reviewdog_version: latest
+    - name: Install clang-format
+      shell: bash
+      run: |
+        if [ -n "${{ inputs.clang_format_version }}" ]; then
+          sudo apt-get install -y "clang-format-${{ inputs.clang_format_version }}"
+          sudo update-alternatives --install /usr/bin/clang-format clang-format \
+            "/usr/bin/clang-format-${{ inputs.clang_format_version }}" 100
+        else
+          sudo apt-get install -y clang-format
+        fi
+    - name: Run clang-format with reviewdog
+      shell: bash
+      env:
+        REVIEWDOG_GITHUB_API_TOKEN: ${{ inputs.github_token }}
+        INPUT_WORKDIR: ${{ inputs.workdir }}
+        INPUT_LEVEL: ${{ inputs.level }}
+        INPUT_REPORTER: ${{ inputs.reporter }}
+        INPUT_FILTER_MODE: ${{ inputs.filter_mode }}
+        INPUT_FAIL_LEVEL: ${{ inputs.fail_level }}
+        INPUT_REVIEWDOG_FLAGS: ${{ inputs.reviewdog_flags }}
+        INPUT_EXTENSIONS: ${{ inputs.extensions }}
+      run: ${{ github.action_path }}/entrypoint.sh
 
-# Ref: https://haya14busa.github.io/github-action-brandings/
-# TODO: update branding if you want.
 branding:
   icon: 'check'
   color: 'blue'
