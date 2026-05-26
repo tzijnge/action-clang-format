@@ -9,7 +9,16 @@ fi
 # Build regex pattern from comma-separated extensions
 PATTERN="\.($(echo "${INPUT_EXTENSIONS}" | tr ',' '|' | tr -d ' '))$"
 
-find . -type f -regextype posix-extended -regex ".*${PATTERN}" -print0 \
+# Build exclusion arguments from comma-separated files and directories
+EXCLUDE_ARGS=""
+if [ -n "${INPUT_EXCLUDE}" ]; then
+  for entry in $(echo "${INPUT_EXCLUDE}" | tr ',' ' '); do
+    EXCLUDE_ARGS="${EXCLUDE_ARGS} -not -path '*/${entry}' -not -path '*/${entry}/*'"
+  done
+fi
+
+# shellcheck disable=SC2086
+find . -type f -regextype posix-extended -regex ".*${PATTERN}" ${EXCLUDE_ARGS} -print0 \
   | xargs -0 -r clang-format -i -style=file
 
 git diff | reviewdog -f=diff \

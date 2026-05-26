@@ -36,6 +36,9 @@ inputs:
   extensions:
     description: 'Comma-separated list of file extensions to check (without leading dot).'
     default: 'c,cpp,cc,cxx,h,hpp,hh,hxx'
+  exclude:
+    description: 'Comma-separated list of files or directories to exclude from formatting checks.'
+    default: ''
 runs:
   using: 'composite'
   steps:
@@ -64,6 +67,7 @@ runs:
         INPUT_FAIL_LEVEL: ${{ inputs.fail_level }}
         INPUT_REVIEWDOG_FLAGS: ${{ inputs.reviewdog_flags }}
         INPUT_EXTENSIONS: ${{ inputs.extensions }}
+        INPUT_EXCLUDE: ${{ inputs.exclude }}
       run: ${{ github.action_path }}/entrypoint.sh
 
 branding:

@@ -54,6 +54,9 @@ inputs:
   extensions:
     description: 'Comma-separated list of file extensions to check (without leading dot).'
     default: 'c,cpp,cc,cxx,h,hpp,hh,hxx'
+  exclude:
+    description: 'Comma-separated list of files or directories to exclude from formatting checks.'
+    default: ''
 ```
 
 ## Usage
@@ -67,7 +70,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: tzijnge/action-clang-format@v1
+      - uses: tzijnge/action-clang-format@master
         with:
           github_token: ${{ secrets.github_token }}
           reporter: github-pr-review
@@ -77,7 +80,7 @@ jobs:
 To pin a specific clang-format version:
 
 ```yaml
-      - uses: tzijnge/action-clang-format@v1
+      - uses: tzijnge/action-clang-format@master
         with:
           github_token: ${{ secrets.github_token }}
           reporter: github-pr-review
