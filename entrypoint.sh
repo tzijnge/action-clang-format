@@ -17,9 +17,11 @@ if [ -n "${INPUT_EXCLUDE}" ]; then
   done
 fi
 
+CLANG_FORMAT_BIN="${CLANG_FORMAT_BINARY:-clang-format}"
+
 # shellcheck disable=SC2086
 find . -type f -regextype posix-extended -regex ".*${PATTERN}" ${EXCLUDE_ARGS} -print0 \
-  | xargs -0 -r clang-format -i -style=file
+  | xargs -0 -r "$CLANG_FORMAT_BIN" -i -style=file
 
 git diff | reviewdog -f=diff \
     -name="clang-format" \
